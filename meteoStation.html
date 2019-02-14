@@ -1,0 +1,71 @@
+<!-- @author: Eneko Rodrigo & Josu Rabade
+     @desc: Programa HTML que grafica los datos de la estacion metereologica para mostrarlos en una pagina web
+-->
+
+<html>
+  <html>
+  <head>
+    <script src="https://www.gstatic.com/charts/loader.js" type="text/javascript"></script> <!-- descargar la libreria loader.js -->
+    <script type="text/javascript">
+	  var jsonData;
+      function myCallback(dataWeGotViaJsonp) {
+      jsonData = dataWeGotViaJsonp['feeds'];
+      };    
+    </script>
+	<!-- canal 1 -->
+    <script src="https://api.thingspeak.com/channels/701303/feeds.json?api_key=LL6LSD0SYPXOVPBK&results=60&amp;callback=myCallback"></script> 
+	<script type="text/javascript">
+	  var jsonData1;
+	  jsonData1=jsonData;
+	</script> 
+	<!-- canal 2 -->
+    <script src="https://api.thingspeak.com/channels/701302/feeds.json?api_key=RP89NQX4F1BKQP6E&results=60&amp;callback=myCallback"></script> 
+	<script type="text/javascript">
+	  var jsonData2;
+	  jsonData2=jsonData;
+	</script> 
+  
+    <script type="text/javascript">
+      <!-- google.charts.load('current', {'packages':['corechart']}); -->
+       google.charts.load('current', {'packages':['corechart']});           <!-- elegimos la grafica tipo corechart -->
+       google.charts.setOnLoadCallback(drawChart);                          <!-- ejecuta la función "drawChart" cuando termine de cargar la libreria loader.js -->
+ 
+       function drawChart() {
+        var data = new google.visualization.DataTable();
+	      data.addColumn('datetime','Time');
+	      data.addColumn('number','Temperatura');
+	      data.addColumn('number','Humedad');
+        var meteoData=[];                                                    <!-- En esta variable se van a guardar los datos de los 2 canales combinados-->
+        for (var j=0; j<jsonData1.length; j++){
+		    meteoData.push(jsonData1[j]);
+		    meteoData.push(jsonData2[j]);
+		};		
+ 
+       for (var i = 0; i < meteoData.length; i++){
+	      var timestamp = meteoData[i]['created_at'];
+          var Temperatura = meteoData[i]['field1'];
+          var Humedad = meteoData[i]['field2'];
+	      data.addRow([new Date(timestamp), parseFloat(Temperatura), parseFloat(Humedad)]);
+	  
+        };
+   
+        var options = {         <!-- Opciones para mostrar la gráfica-->
+          title: 'Estacion Meteorologica', legend: { position: 'bottom' },
+          curveType: 'function', colors: ['red', 'blue'],
+          series: {0: {targetAxisIndex: 0}, 1: {targetAxisIndex: 1}},
+          vAxes: {0: {title: 'Temperatura'}, 1: {title: 'Humedad'}}
+     
+        };
+ 
+        var chart = new google.visualization.LineChart(document.getElementById('curve_chart')); <!-- Colocas la gráfica en el elemento "curve_chart"-->
+        chart.draw(data, options);
+      }
+    </script>
+  </head>
+  <body>
+    <div id="curve_chart">
+    </div>
+  </body>
+  </html>
+ 
+</html>
